@@ -1,0 +1,455 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ro.sxntech.java.pocs</groupId>
+    <artifactId>jk33_9_hw</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>jakarta_ee_9-helloWorld</name>
+    <description>A Jakarta EE starter project boilerplate for Jakarta EE 9</description>
+
+
+    <properties>
+        <!--
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+        -->
+
+        <!-- Global Maven settings -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <!-- Set java compiler version to 11 if you are using Glassfish v6.1 -->
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+
+        <!-- The default value is changed to `false` since maven-war-plugin 3.0.0 -->
+        <failOnMissingWebXml>false</failOnMissingWebXml>
+
+        <!-- Official Maven Plugins -->
+        <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven-war-plugin.version>3.3.1</maven-war-plugin.version>
+
+
+        <!-- Jakarta EE API -->
+        <jakartaee-api.version>9.0.0</jakartaee-api.version>
+        <version.wildfly>23.0.1.Final</version.wildfly>
+        <version.wildfly-microprofile>23.0.0.Final</version.wildfly-microprofile>
+        <version.microprofile-config-api>2.0</version.microprofile-config-api>
+        <version.microprofile-jwt-auth-api>1.1.1</version.microprofile-jwt-auth-api>
+        <version.microprofile-rest-client-api>2.0</version.microprofile-rest-client-api>
+
+        <version.hibernate>5.4.9.Final</version.hibernate>
+        <version.postgresql>42.2.19</version.postgresql>
+
+        <mapstruct.version>1.2.0.Final</mapstruct.version>
+        <lombok.version>1.18.4</lombok.version>
+        <version.flyway-core>7.7.2</version.flyway-core>
+        <version.slf4j-api>1.7.30</version.slf4j-api>
+
+        <!--        <version.wildfly.jar.maven.plugin>4.0.4.Final-SNAPSHOT</version.wildfly.jar.maven.plugin>-->
+        <version.wildfly.jar.maven.plugin>4.0.4.Final-SNAPSHOT</version.wildfly.jar.maven.plugin>
+        <bootable-jar.repo.scm.connection>git@github.com:wildfly-extras/wildfly-jar-maven-plugin.git
+        </bootable-jar.repo.scm.connection>
+        <bootable-jar.repo.scm.url>https://github.com/wildfly-extras/wildfly-jar-maven-plugin
+        </bootable-jar.repo.scm.url>
+    </properties>
+
+    <build>
+        <finalName>${project.artifactId}</finalName>
+
+        <plugins>
+
+            <!-- mvn compiler plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.source}</target>
+                    <annotationProcessorPaths>
+                        <!-- lombok processor -->
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                        <!-- mapstruct processor -->
+                        <path>
+                            <groupId>org.mapstruct</groupId>
+                            <artifactId>mapstruct-processor</artifactId>
+                            <version>${mapstruct.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+                <version>${maven-compiler-plugin.version}</version>
+            </plugin>
+
+
+            <!-- mvn war plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <!-- load dependencies from wildfly container -->
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Dependencies>org.slf4j</Dependencies>
+                            <Dependencies>org.postgresql</Dependencies>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+                <version>${maven-war-plugin.version}</version>
+            </plugin>
+
+        </plugins>
+    </build>
+
+    <profiles>
+        <profile>
+            <id>openshift</id>
+            <build>
+                <finalName>${project.artifactId}</finalName>
+                <plugins>
+                    <!--
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <configuration>
+                            <cloud/>
+                        </configuration>
+                    </plugin>
+                    -->
+                    <!-- wildfly bootable jar
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <configuration>
+                            <feature-packs>
+                                <feature-pack>
+                                    <location>wildfly@maven(org.jboss.universe:community-universe)#${version.wildfly}</location>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>org.keycloak</groupId>
+                                    <artifactId>keycloak-adapter-galleon-pack</artifactId>
+                                    <version>12.0.2</version>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>org.wildfly</groupId>
+                                    <artifactId>wildfly-datasources-galleon-pack</artifactId>
+                                    <version>1.2.2.Final</version>
+                                </feature-pack>
+                            </feature-packs>
+                            <layers>
+                                <layer>web-server</layer>
+                                <layer>cloud-profile</layer>
+                                <layer>postgresql-datasource</layer>
+                                <layer>keycloak-client-oidc</layer>
+                                <layer>jaxrs-server</layer>
+                            </layers>
+                            <context-root>false</context-root>
+                            <cli-sessions>
+                                <cli-session>
+                                    <script-files>
+                                        <script>configure-oidc.cli</script>
+                                    </script-files>
+                                </cli-session>
+                            </cli-sessions>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    -->
+
+                    <plugin>
+                        <groupId>org.wildfly.plugins</groupId>
+                        <artifactId>wildfly-jar-maven-plugin</artifactId>
+                        <!--                        <version>${version.wildfly.jar.maven.plugin}</version>-->
+                        <configuration>
+                            <feature-packs>
+                                <feature-pack>
+                                    <location>wildfly@maven(org.jboss.universe:community-universe):current</location>
+                                </feature-pack>
+                                <feature-pack>
+                                    <groupId>org.keycloak</groupId>
+                                    <artifactId>keycloak-adapter-galleon-pack</artifactId>
+                                    <version>12.0.1</version>
+                                </feature-pack>
+                            </feature-packs>
+                            <layers>
+
+                                <layer>jaxrs-server</layer>
+                                <layer>microprofile-platform</layer>
+                                <!--                                <layer>web-server</layer>-->
+                                <layer>keycloak-client-oidc</layer>
+
+                            </layers>
+                            <context-root>false</context-root>
+                            <cli-sessions>
+                                <cli-session>
+                                    <script-files>
+                                        <script>configure-oidc.cli</script>
+                                    </script-files>
+                                </cli-session>
+                            </cli-sessions>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>package</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+
+                        <!--
+                        <dependencies>
+                            <dependency>
+                                <groupId>org.wildfly.galleon-plugins</groupId>
+                                <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                                <version>4.0.3.Final</version>
+                            </dependency>
+                        </dependencies>
+                        -->
+                    </plugin>
+
+
+                </plugins>
+            </build>
+        </profile>
+
+
+    </profiles>
+
+    <!--
+    <scm>
+        <connection>scm:git:${bootable-jar.repo.scm.connection}</connection>
+        <developerConnection>scm:git:${bootable-jar.repo.scm.connection}</developerConnection>
+        <url>${bootable-jar.repo.scm.url}</url>
+        <tag>HEAD</tag>
+    </scm>
+    -->
+
+    <!--
+    <repositories>
+        <repository>
+            <id>jboss-public-repository-group</id>
+            <name>JBoss Public Repository Group</name>
+            <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </snapshots>
+        </repository>
+        -->
+    <!-- repository needed to provision a full server used as patching distribution source
+    <repository>
+        <id>redhat-ga</id>
+        <name>Redhat GA</name>
+        <url>https://maven.repository.redhat.com/ga/</url>
+        <layout>default</layout>
+        <releases>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+        </snapshots>
+    </repository>
+</repositories>
+<pluginRepositories>
+    <pluginRepository>
+        <id>jboss-public-repository-group</id>
+        <name>JBoss Public Repository Group</name>
+        <url>https://repository.jboss.org/nexus/content/groups/public/</url>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </pluginRepository>
+</pluginRepositories>
+-->
+
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- jakartaee 9 bom -->
+            <dependency>
+                <groupId>jakarta.platform</groupId>
+                <artifactId>jakarta.jakartaee-api</artifactId>
+                <version>${jakartaee-api.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.bom</groupId>
+                <artifactId>wildfly-jakartaee8-with-tools</artifactId>
+                <version>${version.wildfly}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.wildfly.bom</groupId>
+                <artifactId>wildfly-microprofile</artifactId>
+                <version>${version.wildfly}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- wildfly-galleon-maven-plugin -->
+            <dependency>
+                <groupId>org.wildfly.galleon-plugins</groupId>
+                <artifactId>wildfly-galleon-maven-plugin</artifactId>
+                <version>4.0.3.Final</version>
+            </dependency>
+
+            <!-- wildfly-microprofile
+            <dependency>
+                <groupId>org.wildfly.bom</groupId>
+                <artifactId>wildfly-microprofile</artifactId>
+                <version>${version.wildfly-microprofile}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            -->
+
+
+            <!-- eclipse microprofile-config dependency -->
+            <dependency>
+                <groupId>org.eclipse.microprofile.config</groupId>
+                <artifactId>microprofile-config-api</artifactId>
+                <version>${version.microprofile-config-api}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- eclipse microprofile-jwt-auth -->
+            <dependency>
+                <groupId>org.eclipse.microprofile.jwt</groupId>
+                <artifactId>microprofile-jwt-auth-api</artifactId>
+                <version>${version.microprofile-jwt-auth-api}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.rest.client</groupId>
+                <artifactId>microprofile-rest-client-api</artifactId>
+                <version>${version.microprofile-rest-client-api}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- hibernate5 -->
+            <dependency>
+                <groupId>org.hibernate</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${version.hibernate}</version>
+            </dependency>
+
+            <!-- flyway -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>${version.flyway-core}</version>
+            </dependency>
+
+            <!-- lombok -->
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+            </dependency>
+
+            <!-- mapstruct -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <!-- slf4j -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${version.slf4j-api}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- TESTING -->
+            <!-- Arquillian -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.jboss.arquillian.junit</groupId>
+                <artifactId>arquillian-junit-container</artifactId>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.galleon-plugins</groupId>
+            <artifactId>wildfly-galleon-maven-plugin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.jwt</groupId>
+            <artifactId>microprofile-jwt-auth-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.microprofile.rest.client</groupId>
+            <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
+</project>

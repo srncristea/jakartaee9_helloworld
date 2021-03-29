@@ -1,0 +1,8 @@
+{
+  "realm": "public",
+  "auth-server-url": "http://localhost:8084/auth/",
+  "ssl-required": "external",
+  "resource": "JakartaEE-jwt-client",
+  "public-client": true,
+  "confidential-port": 0
+}

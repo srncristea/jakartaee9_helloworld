@@ -1,0 +1,9 @@
+<jboss-deployment-structure>
+    <deployment>
+        <dependencies>
+<!--            <module name="org.javassist" />-->
+            <module name="jakarta.enterprise.inject" />
+<!--            <module name="org.apache.velocity" export="true" />-->
+        </dependencies>
+    </deployment>
+</jboss-deployment-structure>

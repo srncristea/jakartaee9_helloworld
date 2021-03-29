@@ -1,0 +1,8 @@
+FROM jboss/wildfly
+
+COPY ./database/postgresql-42.2.19.jar /opt/jboss/wildfly/modules/system/layers/base/org/postgresql/main/
+COPY ./database/module.xml /opt/jboss/wildfly/modules/system/layers/base/org/postgresql/main/
+
+#Copying required scripts and files
+COPY ./configuration/standalone.xml /opt/jboss/wildfly/standalone/configuration/
+COPY <WEBAPP>.war /opt/jboss/wildfly/standalone/deployments/

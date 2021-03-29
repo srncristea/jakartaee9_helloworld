@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/jk33_9_hw.iml" filepath="$PROJECT_DIR$/jk33_9_hw.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../quarkus_helloworld/quarkus_helloworld.iml" filepath="$PROJECT_DIR$/../quarkus_helloworld/quarkus_helloworld.iml" />
+    </modules>
+  </component>
+</project>

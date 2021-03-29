@@ -21,3 +21,11 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
+
+build/
+target/
+*.iml
+
+
+react-web-client/node_modules/
+react-web-client/jkee_9_hello_world_client/node_modules/

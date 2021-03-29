@@ -1,0 +1,120 @@
+version: '3.8'
+services:
+
+  hello-world-service:
+    image: hello-world-service:latest
+    container_name: hello-world-service
+    build:
+      context: .
+      dockerfile: ./src/main/docker/Dockerfile
+    depends_on:
+      - mso-core-services-postgres
+      - keycloak
+    networks:
+      - backend
+    ports:
+    - 0.0.0.0:8080:8080
+    - 0.0.0.0:5005:5005
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - DATABASE_USER=${DATABASE_USER}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD}
+      - DATABASE_SCHEMA=${DATABASE_SCHEMA}
+      - MIGRATION_ENABLED=${MIGRATION_ENABLED}
+      - JDBC_DRIVER=${JDBC_DRIVER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - KEYCLOAK_HOST=${KEYCLOAK_HOST}
+      - KEYCLOAK_REALM_MASTER_GRAND_TYPE=${KEYCLOAK_REALM_MASTER_GRAND_TYPE}
+      - KEYCLOAK_REALM_MASTER_USERNAME=${KEYCLOAK_REALM_MASTER_USERNAME}
+      - KEYCLOAK_REALM_MASTER_PASSWORD=${KEYCLOAK_REALM_MASTER_PASSWORD}
+      - KEYCLOAK_REALM_MASTER_CLIENTID=${KEYCLOAK_REALM_MASTER_CLIENTID}
+      - KEYCLOAK_REALM_APP_GRAND_TYPE=${KEYCLOAK_REALM_APP_GRAND_TYPE}
+      - KEYCLOAK_REALM_APP_CLIENT_ID=${KEYCLOAK_REALM_APP_CLIENT_ID}
+      - KEYCLOAK_REALM_APP_CLIENT_SECRET=${KEYCLOAK_REALM_APP_CLIENT_SECRET}
+      - APP_NAME=${APP_NAME}
+
+#  keycloak:
+#    image: quay.io/keycloak/keycloak:latest
+#    environment:
+#      DB_VENDOR: POSTGRES
+#      DB_ADDR: postgres
+#      DB_DATABASE: ${POSTGRES_DB}
+#      DB_USER: ${POSTGRES_USER}
+#      DB_SCHEMA: ${DATABASE_SCHEMA}
+#      DB_PASSWORD: ${POSTGRES_PASSWORD}
+#      KEYCLOAK_USER: admin
+#      KEYCLOAK_PASSWORD: Pa55w0rd
+#      # Uncomment the line below if you want to specify JDBC parameters. The parameter below is just an example, and it shouldn't be used in production without knowledge. It is highly recommended that you read the PostgreSQL JDBC driver documentation in order to use it.
+#      #JDBC_PARAMS: "ssl=true"
+#    ports:
+#      - 8081:8080
+#    depends_on:
+#      - mso-core-services-postgres
+
+
+  mysql:
+    image: mysql:5.7
+    volumes:
+      - mysql_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: keycloak
+      MYSQL_USER: keycloak
+      MYSQL_PASSWORD: password
+    networks:
+      - backend
+
+  keycloak:
+    container_name: keycloak-service
+    build:
+      context: .
+      dockerfile: ./src/main/docker/Dockerfile.keycloack
+    ports:
+      - 0.0.0.0:8084:8080
+    depends_on:
+      - mysql
+    networks:
+      - backend
+
+#  keycloak:
+#    image: quay.io/keycloak/keycloak:latest
+#    environment:
+#      DB_VENDOR: MYSQL
+#      DB_ADDR: mysql
+#      DB_DATABASE: keycloak
+#      DB_USER: keycloak
+#      DB_PASSWORD: password
+#      KEYCLOAK_USER: admin
+#      KEYCLOAK_PASSWORD: Pa55w0rd
+#    ports:
+#      - 0.0.0.0:8084:8080
+#    depends_on:
+#      - mysql
+
+
+  mso-core-services-postgres:
+    container_name: mso-core-services-postgres
+    image: postgres:11.5
+    networks:
+      - backend
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - 0.0.0.0:5432:5432
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/tmp
+
+volumes:
+  postgres-data:
+  wildfly_data:
+    driver: local
+  mysql_data:
+    driver: local
+
+networks:
+  backend:
